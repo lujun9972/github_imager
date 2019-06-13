@@ -10,12 +10,12 @@
             (when (re-search-backward "^Remote[[:blank:]]+:[[:blank:]]+\\([^[:blank:]\r\n]+\\)" nil t)
               (match-string 1))))
          (converted-path (when (string-match "^git@github.com:\\([^/]+\\)/\\(.+\\).git" remote-url)
-                           (let ((site "github.com")
+                           (let ((site "raw.githubusercontent.com")
                                  (user (match-string-no-properties 1 remote-url))
                                  (repo (match-string-no-properties 2 remote-url)))
-                             (format "https://%s/%s/%s/%s" site user repo relative-path)))))
+                             (format "https://%s/%s/%s/source/%s" site user repo relative-path)))))
     converted-path))
-(github-imager)
+
 (defun github-imager-convert (body &optional filename)
   (let ((filename (or filename (buffer-file-name))))
     (with-temp-buffer
