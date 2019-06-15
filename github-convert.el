@@ -45,4 +45,4 @@ NUM specifies which parenthesized expression in the regexp should be replaced.")
                         (setf (buffer-substring asset-path-begin asset-path-end) converted-path))))))))))
       (buffer-string))))
 
-(provide 'github-imager)
+(provide 'github-convert)
