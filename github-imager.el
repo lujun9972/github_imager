@@ -1,5 +1,5 @@
 (require 'vc-git)
-(defun github-imager (&optional filename)
+(defun github-convert-link (&optional filename)
   (let* ((filename (or filename (buffer-file-name)))
          (root-path (vc-git-root filename))
          ;; (asset-abs-path (expand-file-name default-directory filename))
@@ -16,26 +16,33 @@
                              (format "https://%s/%s/%s/source/%s" site user repo relative-path)))))
     converted-path))
 
-(defun github-imager-convert (body &optional filename)
+(defcustom github-convert-rules
+  '(("<[a-zA-Z]+[^/>]+\\(src\\|href\\)=\"\\([^\"]+\\)\"[^>]*>" . 2) ;HTML link
+    ("\[\\([^]]+\\)\]\[\\([^]]+\\)\]" . 2))                         ;Markdown link
+  "Alist of filename REGEXP vs NUM.
+Each element looks like (REGEXP . NUM).
+NUM specifies which parenthesized expression in the regexp should be replaced.")
+
+(defun github-convert-body (body &optional filename)
   (let ((filename (or filename (buffer-file-name))))
     (with-temp-buffer
       (insert body)
-      (goto-char (point-min))
-      (while (re-search-forward
-;;; TODO: not only links need to convert, but also inline
-;;; images, may add others later
-              ;; "<a[^>]+href=\"\\([^\"]+\\)\"[^>]*>\\([^<]*\\)</a>" nil t)
-              "<[a-zA-Z]+[^/>]+\\(src\\|href\\)=\"\\([^\"]+\\)\"[^>]*>" nil t)
-        (let* ((asset-path (match-string 2))
-               (asset-path-begin (match-beginning 2))
-               (asset-path-end (match-end 2))
-               (asset-abs-path (expand-file-name asset-path (file-name-directory filename))))
-          (unless (url-type (url-generic-parse-url asset-path)) ;; 判断是否为绝对路径的URI
-            (if (not (file-exists-p asset-abs-path))
-                (message "ORG2ISSUE: [WARN] File %s in hyper link does not exist, org file: %s." asset-abs-path filename)
-              (let ((converted-path (github-imager asset-abs-path)))
-                (when converted-path
-                  (setf (buffer-substring asset-path-begin asset-path-end) converted-path)))))))
+      (save-excursion
+        (dolist (pair github-convert-rules)
+          (goto-char (point-min))
+          (let ((regex (car pair))
+                (num (cdr pair)))
+            (while (re-search-forward regex nil t)
+              (let* ((asset-path (match-string num))
+                     (asset-path-begin (match-beginning num))
+                     (asset-path-end (match-end num))
+                     (asset-abs-path (expand-file-name asset-path (file-name-directory filename))))
+                (unless (url-type (url-generic-parse-url asset-path)) ;; 判断是否为绝对路径的URI
+                  (if (not (file-exists-p asset-abs-path))
+                      (message "ORG2ISSUE: [WARN] File %s in hyper link does not exist, org file: %s." asset-abs-path filename)
+                    (let ((converted-path (github-convert-link asset-abs-path)))
+                      (when converted-path
+                        (setf (buffer-substring asset-path-begin asset-path-end) converted-path))))))))))
       (buffer-string))))
 
 (provide 'github-imager)
