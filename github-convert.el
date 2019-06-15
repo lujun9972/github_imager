@@ -19,7 +19,7 @@
                            (let ((site "raw.githubusercontent.com")
                                  (user (match-string-no-properties 1 remote-url))
                                  (repo (match-string-no-properties 2 remote-url)))
-                             (format "https://%s/%s/%s/source/%s" site user repo relative-path)))))
+                             (format "https://%s/%s/%s/%s/%s" site user repo branch relative-path)))))
     (when (interactive-p)
       (message "%s" converted-path)
       (kill-new converted-path))
