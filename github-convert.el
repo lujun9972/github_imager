@@ -26,11 +26,12 @@
     converted-path))
 
 (defcustom github-convert-rules
-  '(("<[a-zA-Z]+[^/>]+\\(src\\|href\\)=\"\\([^\"]+\\)\"[^>]*>" . 2) ;HTML link
-    ("\[\\([^]]+\\)\]\[\\([^]]+\\)\]" . 2))                         ;Markdown link
+  '(("<[a-zA-Z]+[^/>]+\\(src\\|href\\)=\"\\([^#\"][^\"]*\\)\"[^>]*>" . 2) ;HTML link
+    ("\\[\\([^]]+\\)\\]\\[\\([^]]+\\)\\]" . 2))                         ;Markdown link
   "Alist of filename REGEXP vs NUM.
 Each element looks like (REGEXP . NUM).
 NUM specifies which parenthesized expression in the regexp should be replaced.")
+
 
 (defun github-convert-body (body &optional filename)
   (let ((filename (or filename (buffer-file-name))))
